@@ -1,0 +1,188 @@
+!pip install python-docx
+import pandas as pd
+from docx import Document
+
+doc = Document('C:\\Users\\Monster\\Desktop\\python ultrasound deneme\\deneme_4.docx')
+
+table = doc.tables[0]
+
+# Tabloyu listeye dönüştürme
+data = []
+for row in table.rows:
+    text = [cell.text for cell in row.cells]
+    data.append(text)
+
+# Listeyi Pandas DataFrame'e dönüştürme
+df = pd.DataFrame(data)
+# İlk satırı (başlıklar) sütun isimleri olarak ayarlama
+df.columns = df.iloc[0]
+df = df[1:]
+df = df.drop(index = 62) #boş satır silme
+df = df.drop(index = 17)
+#df.drop(columns=[7, 8, 9], inplace=True)
+df = df.drop(columns=[''])
+df = df.reset_index(drop=True)
+# display all columns
+pd.set_option('display.max_rows', None)
+df
+
+
+
+# DataFrames oluşturma
+data_array_type = {
+    0: [
+        'Array Type', 'Sector', 'Tightly curved', 'Volume', 'Linear', 'Tightly curved', 'Linear',
+        'Purewave and xMatrix(pure crystals for more detail)', 'Purewave and Xmatrix',
+        'Curved', 'Tightly curved', 'Curved', 'Linear', 'Sector', 'Linear', '',
+        'Linear', 'Sector', 'Tightly curved', 'Volume', 'Linear', 'Tightly curved',
+        'Linear', 'Purewave and xMatrix(pure crystals for more detail)', 'Purewave and Xmatrix',
+        'Curved', 'Tightly curved', 'Curved', 'Linear', 'Sector', 'Linear', '',
+        'Linear', 'Sector', 'Tightly curved volume', 'Linear', '', '', 'Linear',
+        'Sector', 'Tightly Curved', 'Curved', 'Curved', 'Linear', 'Curved', 'Volume',
+        'Linear', 'Sector', 'Volume', 'Curved', 'Linear', 'curved', 'purewave and xmatrix',
+        'Compact linear', 'Linear', 'Tightly Curved PureWave', '', 'Curved array', 'Linear'
+    ]
+}
+
+data_field_of_view = {
+    0: [
+        'Field of view', '90', '147', '100', '', '122', '', '90', '100', '111', '163', '102', '',
+        '90 degree', '', '67.5', '', '90', '147', '100', '', '122', '', '90', '100', '111', '163',
+        '102', '', '90', '', '67.5', '', '90', '130', '34.5', '122', '90', '', '90', '', '38',
+        '181', '120', '72', '', '', '66', '', '', '', '180', '', '91.7', '90', '', '', '90', '90',
+        '67.5', ''
+    ]
+}
+
+data_aperture = {
+    0: [
+        'Aperture', '15.4', '24.3', '63', '50', '22.4', '', 'proprietary', 'proprietary',
+        '55.5', '26.1', '53.76', '38', '9.78mm+', '38.4', '', '',
+        '15.4', '24.3', '63', '50', '22.4', '', 'proprietary', 'proprietary',
+        '55.5', '26.1', '53.76', '38', '9.78', '38.4', '', '',
+        '20.3', '26.1', '', '25.5', '', '38.9', '20.3', '34', '',
+        '26.2', '15.36', '63.7', '23', '', '', '', '', '', '', '', '', '', '',
+        '22.4', 'Proprietary', '', '', '', '16', '', '', '', ''
+    ]
+}
+
+data_number_of_elements = {
+    0: [
+        'Number of elements', '96', '128', '192', '256', '128', '1920', '3040', '9212', '160', '128', '192',
+        '160', '96', '128', 'Scan depth: up to 30 cm', '56000', '96', '128', '192', '256', '128', '1920', '3040',
+        '9212', '160', '128', '192', '160', '96', '128', 'Scan depth: up to 30 cm', '56000', '80', '128', '', '128',
+        '', '288', '80', '128', '192', '128', '128', '128', '128', '-', '', '-', '', '', '', '192', '128', '3000',
+        '192', '1920', '160', '', '', ''
+    ]
+}
+
+data_frequency = {
+    0: [
+        'Low', 3, 4, 2, 5, 5, 2, 1, 1, 1, 3, 2, 3, 4, 4, 2, 3, 4, 2, 5, 5, 2, 1, 1, 1, 3, 2, 3, 4, 4, 2, 3, 1, 3, 4, 2, 1, 5, 2, 4, 5, 4, 2, 2, 7, 2, 2, 4, 1, 3, 4, 5, 3, 1, 8, 4, 3, 1, 2, 4
+    ],
+    1: [
+        'High', 8, 10, 6, 12, 8, 22, 5, 6, 5, 10, 9, 12, 12, 12, 5, 14, 10, 6, 12, 8, 22, 5, 6, 5, 10, 9, 12, 12, 12, 5, 14, 5, 9, 12, 7, 4, 18, 4, 12, 13, 9, 9, 6, 15, 5, 6, 12, 4, 9, 9, 12, 8, 5, 26, 18, 12, 4, 5, 12
+    ]
+}
+
+df_array_type = pd.DataFrame(data_array_type)
+df_field_of_view = pd.DataFrame(data_field_of_view)
+df_aperture = pd.DataFrame(data_aperture)
+df_number_of_elements = pd.DataFrame(data_number_of_elements)
+df_frequency = pd.DataFrame(data_frequency).drop(0).astype(float)
+
+# Kullanıcıdan hangi kolonlar için filtreleme yapılacağını alma
+print("Available columns to filter on: Array Type, Field of view, Aperture, Number of elements, Frequency")
+columns_to_filter = input("Enter the columns you want to filter on, separated by commas: ").strip().split(',')
+
+# Kullanıcıdan her bir kolon için filtreleme değerlerini alma
+filter_values = {}
+for column in columns_to_filter:
+    column = column.strip().lower()
+    if column == 'array type':
+        available_values = df_array_type[0][1:].unique()
+        print("Available Array Types:")
+        print(available_values)
+        value = input("Enter the Array Type you want to filter on: ").strip()
+        filter_values['array type'] = value
+    elif column == 'field of view':
+        available_values = [v for v in df_field_of_view[0][1:] if v.replace('.', '', 1).isdigit()]
+        available_values = list(set(float(v) for v in available_values))
+        print("Available Field of view values:")
+        print(sorted(available_values))
+        value = input("Enter the Field of view value you want to filter on: ").strip()
+        filter_values['field of view'] = float(value)
+    elif column == 'aperture':
+        available_values = [v for v in df_aperture[0][1:] if v.replace('.', '', 1).isdigit()]
+        available_values = list(set(float(v) for v in available_values))
+        print("Available Aperture values:")
+        print(sorted(available_values))
+        value = input("Enter the Aperture value you want to filter on: ").strip()
+        filter_values['aperture'] = float(value)
+    elif column == 'number of elements':
+        available_values = [v for v in df_number_of_elements[0][1:] if v.replace('.', '', 1).isdigit()]
+        available_values = list(set(int(v) for v in available_values))
+        print("Available Number of elements values:")
+        print(sorted(available_values))
+        value = input("Enter the Number of elements value you want to filter on: ").strip()
+        filter_values['number of elements'] = int(value)
+    elif column == 'frequency':
+        low_freq_input = float(input("Enter the low frequency value: ").strip())
+        high_freq_input = float(input("Enter the high frequency value: ").strip())
+        filter_values['frequency'] = (low_freq_input, high_freq_input)
+
+# Low ve High frequency aralıklarını belirleme (±2)
+if 'frequency' in filter_values:
+    low_freq_range = (filter_values['frequency'][0] - 2, filter_values['frequency'][0] + 2)
+    high_freq_range = (filter_values['frequency'][1] - 2, filter_values['frequency'][1] + 2)
+
+    # Low frequency aralığında olan indeksleri bulma
+    low_indices = set(df_frequency[(df_frequency[0] >= low_freq_range[0]) & (df_frequency[0] <= low_freq_range[1])].index.tolist())
+
+    # High frequency aralığında olan indeksleri bulma
+    high_indices = set(df_frequency[(df_frequency[1] >= high_freq_range[0]) & (df_frequency[1] <= high_freq_range[1])].index.tolist())
+
+    # Low ve High frequency aralıklarının kesişimindeki indeksleri bulma
+    freq_indices = low_indices.intersection(high_indices)
+else:
+    # Frequency filtrelemesi yapılmıyorsa, tüm indeksleri kullan
+    freq_indices = set(df_frequency.index.tolist())
+
+# Filtreleme işlemi
+filtered_indices = set(range(len(df_array_type)))
+
+for column, value in filter_values.items():
+    if column == 'array type':
+        indices = set(df_array_type[df_array_type[0].str.lower() == value.lower()].index.tolist())
+    elif column == 'field of view':
+        indices = set(df_field_of_view[df_field_of_view[0].apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else None) == value].index.tolist())
+    elif column == 'aperture':
+        indices = set(
+    df_aperture[
+        df_aperture[0].apply(lambda x: pd.to_numeric(x, errors='coerce')).fillna(0) == value
+    ].index.tolist())
+        #indices = set(df_aperture[df_aperture[0].apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else None) == value].index.tolist())
+    elif column == 'number of elements':
+        indices = set(df_number_of_elements[df_number_of_elements[0].apply(lambda x: int(x) if x.replace('.', '', 1).isdigit() else None) == value].index.tolist())
+    elif column == "frequency":
+        continue
+    # Filtreleme işlemini yalnızca filtreleme yapılmış parametreler için yap
+    if filtered_indices:
+        filtered_indices = filtered_indices.intersection(indices)
+
+# Sonuçları gösterme
+print("Filtered indices based on your input:")
+print(filtered_indices)
+
+print("Frequency indices based on your input:")
+print(freq_indices)
+
+# Final kesişim indekslerini hesaplama
+final_indices = filtered_indices.intersection(freq_indices) if filtered_indices else freq_indices
+final_indices = list(final_indices)
+final_indices = [index - 1 for index in list(final_indices)]
+final_models = df.iloc[final_indices]
+
+print("FINAL MODELS AFTER APPLYİNG ALL FILTERS")
+print(final_indices)
+print(final_models)
